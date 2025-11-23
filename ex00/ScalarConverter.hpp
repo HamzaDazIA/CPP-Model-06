@@ -19,7 +19,7 @@ class ScalarConverter
         ScalarConverter(const ScalarConverter &obj);
         ScalarConverter& operator=(const ScalarConverter &obj);
     public:
-        static void convert(std::string str);
+        static void convert(const std::string& str);
 
 };
 #endif

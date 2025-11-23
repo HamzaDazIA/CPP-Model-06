@@ -1,7 +1,5 @@
 #include "ScalarConverter.hpp"
 
-
-
 ScalarConverter::ScalarConverter(){}
 ScalarConverter::~ScalarConverter(){}
 ScalarConverter::ScalarConverter(const ScalarConverter &obj){
@@ -14,7 +12,7 @@ ScalarConverter& ScalarConverter::operator=(const ScalarConverter &obj)
     return (*this);
 }
 
-void printAll(double value)
+void print_char(double value)
 {
     std::cout << "char: ";
     if (std::isnan(value) || std::isinf(value) || value < 0 || value > 127)
@@ -23,72 +21,112 @@ void printAll(double value)
         std::cout << "Non displayable" << std::endl;
     else
         std::cout << "'" << static_cast<char>(value) << "'" << std::endl;
+}
 
-    std::cout << "int: ";
-    if (std::isnan(value) || std::isinf(value) || value > static_cast<double>(INT_MAX) || value < static_cast<double>(INT_MIN))
-        std::cout << "impossible" << std::endl;
-    else
-        std::cout << static_cast<int>(value) << std::endl;
-
-    std::cout << "float: ";
-    if (std::isnan(value))
-        std::cout << "nanf" << std::endl;
-    else if (std::isinf(value))
-        std::cout << (value > 0 ? "+inff" : "-inff") << std::endl;
-    else
-    {
-        float f = static_cast<float>(value);
-        if (f == static_cast<int>(f))
-            std::cout << f << ".0f" << std::endl;
-        else
-            std::cout << std::fixed << std::setprecision(1) << f << "f" << std::endl;
-    }
-
+void toDouble(double value)
+{
     std::cout << "double: ";
     if (std::isnan(value))
+    {
         std::cout << "nan" << std::endl;
-    else if (std::isinf(value))
+        return;
+    }
+    if (std::isinf(value))
+    {
         std::cout << (value > 0 ? "+inf" : "-inf") << std::endl;
+        return;
+    }
+    
+
+    if (value == static_cast<double>(static_cast<int>(value)))
+        std::cout << static_cast<int>(value) << ".0" << std::endl;
     else
-    {
-        if (value == static_cast<int>(value))
-            std::cout << value << ".0" << std::endl;
-        else
-            std::cout << std::fixed << std::setprecision(1) << value << std::endl;
-    }
+        std::cout << value << std::endl;
 }
 
-bool    toCHar(const std::string &str)
+void toFloat(double value)
 {
-    if (str.length() == 1 && !std::isdigit(str[0]))
+    std::cout << "float: ";
+    if (std::isnan(value))
     {
-        printAll(static_cast<double>(str[0]));
-        return (true);
+        std::cout << "nanf" << std::endl;
+        toDouble(value);
+        return;
     }
-    return (false);
-     
+    if (std::isinf(value))
+    {
+        std::cout << (value > 0 ? "+inff" : "-inff") << std::endl;
+        toDouble(value);
+        return;
+    }
+    
+    float result = static_cast<float>(value);
+
+    if (std::isinf(result) && !std::isinf(value))
+    {
+        std::cout << "impossible" << std::endl;
+        toDouble(value);
+        return;
+    }
+    
+    // Smart display
+    if (result == static_cast<float>(static_cast<int>(result)))
+        std::cout << static_cast<int>(result) << ".0f" << std::endl;
+    else
+        std::cout << result << "f" << std::endl;
+    
+    toDouble(value);
 }
 
-bool tonumber(std::string &str)
+void toInt(double value)
+{
+    std::cout << "int: ";
+    if (value > static_cast<double>(INT_MAX) || 
+        value < static_cast<double>(INT_MIN) || 
+        std::isnan(value) || 
+        std::isinf(value))
+    {
+        std::cout << "impossible" << std::endl;
+        toFloat(value);
+        return;
+    }
+    std::cout << static_cast<int>(value) << std::endl;
+    toFloat(value);
+}
+
+bool tonumbers(const std::string &str)
 {
     char *endstr;
     double value = std::strtod(str.c_str(), &endstr);
+
     if (*endstr == '\0' || (*endstr == 'f' && *(endstr + 1) == '\0'))
     {
-        printAll(value);
-        return (true);
+        print_char(value);
+        toInt(value);
+        return true;
     }
-    return (false);
-} 
+    return false;
+}
 
-
-
-void ScalarConverter::convert(std::string str)
+bool toCHar(const std::string &str)
 {
-    if (toCHar(str)) {}
-    else if (tonumber(str)) {}
-    else
+    if (str.length() == 1 && !std::isdigit(str[0]))
     {
-        std::cout << "Invalid input" << std::endl;
+        double value = static_cast<double>(str[0]);
+        print_char(value);
+        toInt(value);
+        return true;
     }
+    
+    return false;
+}
+
+void ScalarConverter::convert(const std::string& str)
+{
+    if (toCHar(str))
+        return;
+    if (tonumbers(str))
+        return;
+    
+    std::cout << "Invalid input" << std::endl;
 }
