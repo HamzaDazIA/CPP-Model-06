@@ -5,7 +5,7 @@
 class Data
 {
     public :
-        int i = 0;
+        int i;
             Data();
         ~Data();
         Data(const Data &obj);
