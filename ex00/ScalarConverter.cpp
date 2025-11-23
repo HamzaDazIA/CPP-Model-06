@@ -37,9 +37,10 @@ void toDouble(double value)
         return;
     }
     
-
-    if (value == static_cast<double>(static_cast<int>(value)))
-        std::cout << static_cast<int>(value) << ".0" << std::endl;
+    // Safe check: use modf to detect fractional part
+    double intpart;
+    if (std::modf(value, &intpart) == 0.0)
+        std::cout << std::fixed << std::setprecision(1) << value << std::endl;
     else
         std::cout << value << std::endl;
 }
@@ -61,7 +62,8 @@ void toFloat(double value)
     }
     
     float result = static_cast<float>(value);
-
+    
+    // Check if conversion caused overflow
     if (std::isinf(result) && !std::isinf(value))
     {
         std::cout << "impossible" << std::endl;
@@ -69,9 +71,10 @@ void toFloat(double value)
         return;
     }
     
-    // Smart display
-    if (result == static_cast<float>(static_cast<int>(result)))
-        std::cout << static_cast<int>(result) << ".0f" << std::endl;
+    // Safe check: use modf to detect fractional part
+    double intpart;
+    if (std::modf(static_cast<double>(result), &intpart) == 0.0)
+        std::cout << std::fixed << std::setprecision(1) << result << "f" << std::endl;
     else
         std::cout << result << "f" << std::endl;
     
@@ -98,7 +101,7 @@ bool tonumbers(const std::string &str)
 {
     char *endstr;
     double value = std::strtod(str.c_str(), &endstr);
-
+    
     if (*endstr == '\0' || (*endstr == 'f' && *(endstr + 1) == '\0'))
     {
         print_char(value);
@@ -110,6 +113,7 @@ bool tonumbers(const std::string &str)
 
 bool toCHar(const std::string &str)
 {
+
     if (str.length() == 1 && !std::isdigit(str[0]))
     {
         double value = static_cast<double>(str[0]);
